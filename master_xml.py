@@ -295,6 +295,16 @@ def evaluateTokens(cards):
                         cards.get(tokenId)['released'] = True
                         card['related'].append(tokenId)
 
+def evaluateKeywords(cards):
+    for cardId in cards:
+        card = cards[cardId]
+            card['keywords'] = []
+            # Find all keywords in info string. E.g. find 'spawn' in '<keyword="spawn">'
+            # Can just use en-US here. It doesn't matter, all regions will return the same result.
+            result = re.findall(r'.*?\<keyword=\"(.*?)\"\>.*?', cards[cardId]['infoFormattedXml']['en-US'])
+            for key in result:
+                card['keywords'].append(key)
+
 # If a card is not collectible, we don't have the art for it.
 def removeInvalidImages(cards):
     for cardId in cards:
@@ -382,6 +392,8 @@ cardData = createCardJson()
 evaluateInfoData(cardData)
 # We have to do this as well to catch cards like Botchling, that are explicitly named in the Baron's tooltip.
 evaluateTokens(cardData)
+# After the info text has been evaluated, we can extract the keywords (e.g. deploy).
+evaluateKeywords(cardData)
 removeInvalidImages(cardData)
 removeUnreleasedCards(cardData)
 
