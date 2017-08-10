@@ -41,7 +41,7 @@ def getRawTooltips(locale):
         tooltipId = split[1].replace("tooltip_","").replace("_description","").replace("\"", "").lstrip("0")
 
         # Remove any quotation marks and new lines.
-        rawTooltips[tooltipId] = split[2].replace("\"", "").replace("\\n", "\n")
+        rawTooltips[tooltipId] = split[2].replace("\"\n", "").replace("\\n", "\n")
 
     return rawTooltips
 
