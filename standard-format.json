@@ -14,6 +14,11 @@
       "en-US": "Spawn a Botchling or a Lubberkin.",
       "etc.": "etc.",
     },
+    "infoRaw": {
+      "de-DE": "<keyword=spawn>Generiere</keyword> einen Fehlgeborenen oder einen T\u00f6lpelbold.",
+      "en-US": "<keyword=spawn>Spawn</keyword> a Botchling or a Lubberkin.",
+      "etc.": "etc.",
+    },
     "ingameId": "122101",
     "positions": [
       "Siege"
