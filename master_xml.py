@@ -41,7 +41,7 @@ def getRawTooltips(locale):
         tooltipId = split[1].replace("tooltip_","").replace("_description","").replace("\"", "").lstrip("0")
 
         # Remove any quotation marks and new lines.
-        rawTooltips[tooltipId] = split[2].replace("\"", "").replace("\\n", "\n")
+        rawTooltips[tooltipId] = split[2].replace("\"\n", "").replace("\\n", "\n")
 
     return rawTooltips
 
@@ -124,7 +124,7 @@ def evaluateInfoData(cards):
                             if abilityValue != None:
                                 cards[cardId]['info'][region] = cards[cardId]['info'][region].replace("{" + key + "}", abilityValue)
 
-            cards[cardId]['infoFormattedXml'][region] = cards[cardId]['info'][region]
+            cards[cardId]['infoRaw'][region] = cards[cardId]['info'][region]
             cards[cardId]['info'][region] = cleanHtml(cards[cardId]['info'][region])
 
 def getCardNames(locale):
@@ -212,7 +212,7 @@ def createCardJson():
 
         if (template.find('Tooltip') != None):
             card['info'] = {}
-            card['infoFormattedXml'] = {}
+            card['infoRaw'] = {}
             for region in LOCALES:
                 # Set to tooltipId for now, we will evaluate after we have looked at every card.
                 card['info'][region] = template.find('Tooltip').attrib['key']
@@ -301,7 +301,7 @@ def evaluateKeywords(cards):
             card['keywords'] = []
             # Find all keywords in info string. E.g. find 'spawn' in '<keyword="spawn">'
             # Can just use en-US here. It doesn't matter, all regions will return the same result.
-            result = re.findall(r'.*?\<keyword=\"(.*?)\"\>.*?', cards[cardId]['infoFormattedXml']['en-US'])
+            result = re.findall(r'.*?\<keyword=\"(.*?)\"\>.*?', cards[cardId]['infoRaw']['en-US'])
             for key in result:
                 card['keywords'].append(key)
 
