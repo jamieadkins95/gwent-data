@@ -301,7 +301,7 @@ def evaluateKeywords(cards):
         if card.get('infoRaw') == None:
             continue
         card['keywords'] = []
-        # Find all keywords in info string. E.g. find 'spawn' in '<keyword="spawn">'
+        # Find all keywords in info string. E.g. find 'spawn' in '<keyword=spawn>'
         # Can just use en-US here. It doesn't matter, all regions will return the same result.
         result = re.findall(r'<keyword=([^>]+)>', card['infoRaw']['en-US'])
         for key in result:
