@@ -273,7 +273,9 @@ def evaluateTokens(cards):
         if card['released']:
             card['related'] = []
             for ability in TEMPLATES[cardId].iter('Ability'):
-                ability = ABILITIES[ability.attrib['id']]
+                ability = ABILITIES.get(ability.attrib['id'])
+                if ability == None:
+                    continue
 
                 # There are several different ways that a template can be referenced.
                 for template in ability.iter('templateId'):
