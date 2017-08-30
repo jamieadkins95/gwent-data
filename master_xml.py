@@ -9,7 +9,7 @@ from pprint import pprint
 
 from unidecode import unidecode
 
-PATCH = "v0-9-80"
+PATCH = "v0-9-10"
 # Replace with these values {0} : card id, {1} : variation id, {0} : image size
 IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/gwent-9e62a.appspot.com/o/images%2F" + PATCH + "%2F{0}%2F{1}%2F{2}.png?alt=media"
 IMAGE_SIZES = ['original', 'high', 'medium', 'low', 'thumbnail']
