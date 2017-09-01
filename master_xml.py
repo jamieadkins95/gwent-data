@@ -5,11 +5,20 @@ import os
 import json
 import re
 import time
-from pprint import pprint
+import argparse
 
+from pprint import pprint
 from unidecode import unidecode
 
-PATCH = "v0-9-10"
+
+parser = argparse.ArgumentParser(description="Transform the Gwent card data contained in xml files into a "
+                                             "standardised JSON format.")
+parser.add_argument("inputFolder", help="Folder containing the xml files.")
+parser.add_argument("patch", help="Specifies the Gwent patch version.")
+args = parser.parse_args()
+PATCH = args.patch
+xml_folder = args.inputFolder
+
 # Replace with these values {0} : card id, {1} : variation id, {0} : image size
 IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/gwent-9e62a.appspot.com/o/images%2F" + PATCH + "%2F{0}%2F{1}%2F{2}.png?alt=media"
 IMAGE_SIZES = ['original', 'high', 'medium', 'low', 'thumbnail']
@@ -327,7 +336,6 @@ def removeUnreleasedCards(cards):
     # Gaunter's 'Lower than 5' token
     cards['200176']['released'] = False
 
-xml_folder = sys.argv[1]
 
 # Add a backslash on the end if it doesn't exist.
 if xml_folder[-1] != "/":
