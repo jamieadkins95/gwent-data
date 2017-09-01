@@ -12,7 +12,9 @@ from unidecode import unidecode
 
 
 parser = argparse.ArgumentParser(description="Transform the Gwent card data contained in xml files into a "
-                                             "standardised JSON format.")
+                                             "standardised JSON format.",
+                                 epilog="Usage example:\n./master_xml.py ./pathToXML v0-9-10",
+                                 formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("inputFolder", help="Folder containing the xml files.")
 parser.add_argument("patch", help="Specifies the Gwent patch version.")
 args = parser.parse_args()
