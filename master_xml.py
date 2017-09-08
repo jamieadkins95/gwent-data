@@ -308,6 +308,12 @@ def evaluateTokens(cards):
                         cards.get(tokenId)['released'] = True
                         card['related'].append(tokenId)
 
+                for template in ability.iter('TemplateId'):
+                    tokenId = template.attrib['V']
+                    if cards.get(tokenId) != None:
+                        cards.get(tokenId)['released'] = True
+                        card['related'].append(tokenId)
+
 def evaluateKeywords(cards):
     for cardId in cards:
         card = cards[cardId]
