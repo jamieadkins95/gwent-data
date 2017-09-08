@@ -290,7 +290,7 @@ def evaluateTokens(cards):
 
                 # There are several different ways that a template can be referenced.
                 for template in ability.iter('templateId'):
-                    tokenId = ability.find('templateId').attrib['V']
+                    tokenId = template.attrib['V']
                     if cards.get(tokenId) != None:
                         cards.get(tokenId)['released'] = True
                         card['related'].append(tokenId)
