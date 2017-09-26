@@ -4,36 +4,48 @@
  * 
  * The script can be called as well, or in command line can be called followed by
  * cards-id to generate specific cards (JSON still needs to be parsed)
- * 
  * As the Gwent version isn't a part of the json file, the const VERSION needs to
  * be change manually when needed
+ * 
+ * Example of command-line call :   php card_generator.php
+ *                                  php card_generator.php -cards 152101 152102 152103
+ * 
+ * Example of http call :           localhost/card_generator/card_generator.php
+ *                                  localhost/card_generator/card_generator.php?cards=152101,152102,152103
  * 
  * JsonStreamingParser is required. file_get_contents with json_decode is way too
  * long for the cards.json file to explore
  * @url : https://github.com/salsify/jsonstreamingparser
+ *  
+ * @author      Meowcate
+ * @license     http://www.opensource.org/licenses/mit-license.html  MIT License
  */
+
+/*****************
+ * CONFIGURATION *
+ ****************/
+const DS = '/'; // Change for `\` for Windows if needed
+const VERSION = 'v0-9-10'; // Only important as the destination folder
+const DEBUG = 1;
+const MAX_CARDS = 5; // Maximum generated cards. 0 for no limit
+
+
 
 require_once 'vendor/autoload.php';
 
-// The script takes a looooong time
-// For example on my small server, around 30 sec for JSON, and 15-20sec for each card,
-// so around 2 hours
+// The script can takes more than 2 hours to generate all Gwent cards
+// If you need to have an idea of the time, generate a few cards and check the
+// debug timer to get the idea.
+// Note : The JSON parsing will take a while but will be running only once every time
 set_time_limit(0);
 
-// Check progress with output buffering
+// Checking progress in real time with output buffering
 ob_implicit_flush(true);
 ob_start();
 $microtime = microtime(true);
 
-// Configuration
-const DS = '/'; // Change for `\` for Windows if needed
-const VERSION = 'v0-9-10'; // Only important as the destination folder
-const DEBUG = 1;
-const CARDS_NUMBER = 5; // For testing. Push it to 500 to do all the cards
-
-
-// json_decode is waaaay too slow and RAM-consume for big files
-// this streaming listener is faster 
+// json_decode is too slow getting all the datas in memory
+// The streaming listener is faster
 $listener = new \JsonStreamingParser\Listener\InMemoryListener();
 $stream = fopen('cards.json', 'r');
 try {
@@ -47,26 +59,24 @@ try {
 $json = current($listener->getJson());
 debug("JSON to Array done");
 
+
 // Let's generate
-if (!empty($argv)) {
+if ((isset($argv[0]) && $argv[0] == '-cards' && sizeof($argv) > 1)  // command-line version
+        || isset($_GET['cards'])) {                                 // http version
     // Generate all cards from passed arguments
-    foreach ($argv as $cardId) {
-        if ($json[$cardId]['released'] == 1) {
-            generateCard($cardId, $json[$cardId]);
-            debug("Card : " . $cardId);
-        }
+    $cardList = [];
+    if (isset($argv[0])) {
+        // Removing the first parameter
+        array_shift($argv);
+        $cardList = $argv;
     }
+    if (isset($_GET['cards'])) {
+        $cardList = explode(',', $_GET['cards']);
+    }
+    startCardList($cardList, $json);
 } else {
-    // Generate all cards from JSON, top to CARDS_NUMBER
-    $i = 0;
-    foreach ($json as $cardId => $cardDatas) {
-        if ($cardDatas['released'] == 1) {
-            generateCard($cardId, $cardDatas);
-            debug("Card : " . $cardId);
-            $i++;
-        }
-        if ($i >= CARDS_NUMBER) break;
-    }
+    // Generate all cards from JSON, top to MAX_CARDS
+    startCardList($cardList, $json);
 }
 ob_end_flush();
 
@@ -80,20 +90,43 @@ function debug($data)
 {
     global $microtime;
     if (DEBUG) {
-        echo '<pre>';
-        echo "Time : " . round(microtime(true) - $microtime, 6) . " sec<br>";
+        echo (PHP_SAPI == 'cli') ? '' : '<pre>';
+        echo "Time : " . round(microtime(true) - $microtime, 6) . " sec";
+        echo (PHP_SAPI == 'cli') ? '\n' : '<br>';
         $microtime = microtime(true);
         var_dump($data);
-        echo '</pre>';
+        echo (PHP_SAPI == 'cli') ? '' : '</pre>';
         ob_flush();
     }
 }
 
 
 /**
+ * Start the generation of all cards from the card list
+ * It will stops when all cards are generated or MAX_CARDS is got
+ * @param array $cardList Array of card IDs
+ * @param array $json Content of cards.json
+ */
+function startCardList($cardList, $json)
+{
+    $i = 0;
+    foreach ($cardList as $cardId) {
+        if (isset($json[$cardId]) && $json[$cardId]['released'] == 1) {
+            generateCard($cardId, $json[$cardId]);
+            debug("Card : " . $cardId);
+            $i++;
+        } else {
+            debug("The card ID `" . $cardId . "` is incorrect, or this card hasn't been released");
+        }
+        if ($i >= MAX_CARDS) break;
+    }
+}
+
+
+/**
  * Card generation
- * @param int $cardId
- * @param array $cardDatas
+ * @param int $cardId Id of the card
+ * @param array $cardDatas Datas of the card extracted from the json
  * @throws Exception
  */
 function generateCard($cardId, $cardDatas)
@@ -138,6 +171,8 @@ function generateCard($cardId, $cardDatas)
         if (FALSE === $artwork->readImage($artFile)) {
             throw new Exception("Artwork not found");
         }
+        // Cropping the artwork to remove the transparent excess
+        $artwork->cropimage(497, 713, 0, 0);
         $artwork->resizeimage(950, 1360, Imagick::FILTER_LANCZOS, 1);
         $newCard->compositeImage($artwork, Imagick::COMPOSITE_DEFAULT, 301, 227);
         
@@ -273,31 +308,42 @@ function generateCard($cardId, $cardDatas)
         
         $newCard->resizeimage(1850, 2321, Imagick::FILTER_LANCZOS, 1);
         $newApiCard = new Imagick();
+        // The original version doesn't use the generateCardFile() function
+        // It needs to be placed on a bigger layout to add the same transparent
+        // margins as the official source
         $newApiCard->newImage(2186, 2924, new ImagickPixel("rgba(250,15,150,0)"));
         $newApiCard->compositeImage($newCard, Imagick::COMPOSITE_DEFAULT, 164, 330);
         $newApiCard->setImageFileName($cardsDestination . 'original.png');
         if (FALSE == $newApiCard->writeImage()) {
             throw new Exception("Original copy error");
         }
-        $newApiCard->resizeimage(1093, 1462, Imagick::FILTER_LANCZOS, 1);
-        $newApiCard->setImageFileName($cardsDestination . 'high.png');
-        if (FALSE == $newApiCard->writeImage()) {
-            throw new Exception("High copy error");
-        }
-        $newApiCard->resizeimage(547, 731, Imagick::FILTER_LANCZOS, 1);
-        $newApiCard->setImageFileName($cardsDestination . 'medium.png');
-        if (FALSE == $newApiCard->writeImage()) {
-            throw new Exception("Medium copy error");
-        }
-        $newApiCard->resizeimage(274, 366, Imagick::FILTER_LANCZOS, 1);
-        $newApiCard->setImageFileName($cardsDestination . 'low.png');
-        if (FALSE == $newApiCard->writeImage()) {
-            throw new Exception("Low copy error");
-        }
-        $newApiCard->resizeimage(137, 183, Imagick::FILTER_LANCZOS, 1);
-        $newApiCard->setImageFileName($cardsDestination . 'thumbnail.png');
-        if (FALSE == $newApiCard->writeImage()) {
-            throw new Exception("Thumbnail copy error");
+        
+        generateCardFile($newApiCard, $cardsDestination, 'high', 1093, 1462);
+        generateCardFile($newApiCard, $cardsDestination, 'medium', 547, 731);
+        generateCardFile($newApiCard, $cardsDestination, 'low', 274, 366);
+        generateCardFile($newApiCard, $cardsDestination, 'thumbnail', 137, 183);
+    } catch (Exception $e) {
+        echo 'Caught exception: ' . $e->getMessage() . "\n";
+    }
+}
+
+
+/**
+ * Generate a resized card file
+ * @param Imagick $image Card object
+ * @param string $imagePath Current destination path
+ * @param string $size Size name of the file
+ * @param int $width New width of the card
+ * @param int $height New height of the card
+ * @throws Exception
+ */
+function generateCardFile($image, $imagePath, $size, $width, $height)
+{
+    try {
+        $image->resizeimage($width, $height, Imagick::FILTER_LANCZOS, 1);
+        $image->setImageFileName($imagePath . $size . '.png');
+        if (FALSE == $image->writeImage()) {
+            throw new Exception(ucfirst($size) . " copy error");
         }
     } catch (Exception $e) {
         echo 'Caught exception: ' . $e->getMessage() . "\n";
