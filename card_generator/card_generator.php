@@ -34,6 +34,7 @@ if (!extension_loaded('imagick')) {
         MAX_CARDS = 5, // Maximum generated cards. 0 for no limit
         JSON_FILENAME = 'cards.json', // Current JSON filename, same folder as the script
         CARDS_FOLDER = 'images',
+        CUSTOM_FOLDER = 'image-custom',
         ASSETS_FOLDER = 'assets',
         RESIZE_FILTER = Imagick::FILTER_LANCZOS;
 
@@ -45,6 +46,8 @@ ob_start();
 
 $Generator = new CardGenerator();
 $Generator->start();
+
+ob_end_flush();
 
 /**
  * Gwent Card Generator
@@ -64,9 +67,6 @@ class CardGenerator
         $this->_errors = 0;
         $this->_notReleased = 0;
         $this->_microtime = microtime(true);
-
-        // Start with parsing the JSON
-        $this->_cardsJsonToArray();
     }
 
     /**
@@ -81,15 +81,25 @@ class CardGenerator
             // Check the existence of `cards` and a list of ID
             $cardsParam = array_search('cards', $argv);
             if (($cardsParam !== false) && (!empty($argv[$cardsParam + 1]))) {
+                // Generate some cards
                 $this->_startCardList(explode(',', $argv[$cardsParam + 1]));
+            } else if (array_search('custom', $argv) !== false) {
+                // Generate a custom card
+                $this->_generateCustomCard($argv);
             } else {
+                // Generate all cards
                 $this->_startCardList();
             }
         } else { // HTTP
             die(var_dump($_GET));
             if (!empty($_GET['cards'])) {
+                // Generate some cards
                 $this->_startCardList(explode(',', $_GET['cards']));
+            } else if (array_key_exists('custom', $_GET) !== false) {
+                // Generate a custom card
+                $this->_generateCustomCard($_GET);
             } else {
+                // Generate all cards
                 $this->_startCardList();
             }
         }
@@ -102,22 +112,25 @@ class CardGenerator
      */
     private function _startCardList($cardIdList = null)
     {
-        $cards = 0;
+        // Start with parsing the JSON
+        $this->_cardsJsonToArray();
+        
+        $generatedCards = 0;
         if (empty($cardIdList)) {
             // No list ? so the JSON id will be the list
             $cardIdList = array_keys($this->_cardsJson);
         }
         foreach ($cardIdList as $cardId) {
             if ($this->_generateGwentCard($cardId)) {
-                $cards++;
+                $generatedCards++;
             }
-            if ($cards >= MAX_CARDS) {
+            if ($generatedCards >= MAX_CARDS) {
                 $this->_echoFlush(" [v] Max numbers of cards achieved (" . MAX_CARDS . ")");
                 break;
             }
         }
         $time = round(microtime(true) - $this->_microtime, 2) . " sec";
-        $this->_echoFlush($cards . " cards generated in " . $time);
+        $this->_echoFlush($generatedCards . " cards generated in " . $time);
         $this->_echoFlush("Generation errors : " . $this->_errors);
         $this->_echoFlush("Not-released cards : " . $this->_notReleased);
     }
@@ -151,6 +164,23 @@ class CardGenerator
             return false;
         }
         return true;
+    }
+
+    /**
+     * 
+     * @param type $customDatas
+     */
+    private function _generateCustomCard($customDatas)
+    {
+        $cardDatas = $this->_formatCustomCardDatas($customDatas);
+        try {
+            $microtime = microtime(true);
+            $this->_generateCardImagick($cardDatas, true);
+            $time = round(microtime(true) - $microtime, 2) . " sec";
+            $this->_echoFlush(" [v] Custom card " . $cardDatas['filename'] . " generated (" . $time . ")");
+        } catch (Exception $ex) {
+            $this->_echoFlush(" [x] Custom card " . $cardDatas['filename'] . " can't be generated : " . $ex->getMessage());
+        }
     }
 
     /**
@@ -226,6 +256,7 @@ class CardGenerator
         }
 
         $spy = (in_array('Disloyal', $cardDatas['loyalties']) && !in_array('Loyal', $cardDatas['loyalties'])) ? true : false;
+
         if (in_array('Event', $cardDatas['positions'])) {
             $position = false;
         } else if (count($cardDatas['positions']) == 3) {
@@ -255,6 +286,50 @@ class CardGenerator
     }
 
     /**
+     * Format passed parameters for custom card
+     * @param type $customParams
+     * @return type
+     */
+    private function _formatCustomCardDatas($customParams)
+    {
+        $customDatas = [
+            'filename' => 'default.png',
+            'faction' => 'neutral',
+            'type' => 'bronze',
+            'rarity' => 'common',
+            'strength' => 0,
+            'position' => false,
+            'spy' => false,
+            'count' => null,
+            'banner' => 'neutral',
+        ];
+        
+        
+
+        // Passed arguments override the previous default values
+        if (PHP_SAPI == 'cli') {
+            for ($i = 0; $i < sizeof($customParams); $i++) {
+                // CLI params are like `strength=9`
+                if (strpos($customParams[$i], '=')) {
+                    
+                    $param = explode('=', $customParams[$i]);
+                    
+                    if (isset($customDatas[$param[0]])) {
+                        $customDatas[$param[0]] = $param[1];
+                    }
+                }
+            }
+        } else {
+            foreach ($customDatas as $key => $v) {
+                if (isset($customParams[$key])) {
+                    $customDatas[$key] = $customParams[$key];
+                }
+            }
+        }
+        return $customDatas;
+    }
+
+    /**
      * Add a composite image on the current generated image
      * @param string $stepName Name of the current step
      * @param string $stepFile Path to the file to the current step
@@ -274,7 +349,7 @@ class CardGenerator
      * @param array $cardDatas Datas of the card
      * @throws Exception
      */
-    private function _generateCardImagick($cardDatas)
+    private function _generateCardImagick($cardDatas, $custom = false)
     {
         $this->_card = new Imagick();
         if ($this->_card->readImage(ASSETS_FOLDER . DS . 'image_layout.png') !== true) {
@@ -283,11 +358,30 @@ class CardGenerator
 
         // adding the artwork
         $artwork = new Imagick();
-        if ($artwork->readImage(ASSETS_FOLDER . DS . 'artworks' . DS . $cardDatas['id'] . '00.png') !== true) {
-            throw new Exception("Artwork not found");
+        if ($custom) {
+            // Custom generation
+            if ($artwork->readImage(ASSETS_FOLDER . DS . 'custom-artworks' . DS . $cardDatas['filename']) !== true) {
+                throw new Exception("Custom artwork ". $cardDatas['filename'] . " not found in " . ASSETS_FOLDER . DS . 'custom-artworks' . DS);
+            }
+            // Resize the image if it's not the good size
+            $artworkHeight = $artwork->getimageheight();
+            $artworkWidth = $artwork->getimagewidth();
+            if ($artworkHeight !== 713 && $artworkWidth !== 497) {
+                if ($artworkHeight / 713 < $artworkWidth / 497) {
+                    $artwork->scaleimage(0, 713);
+                } else {
+                    $artwork->scaleimage(497, 0);
+                }
+                $artwork->cropimage(497, 713, 0, 0);
+            }
+        } else {
+            // JSON generation
+            if ($artwork->readImage(ASSETS_FOLDER . DS . 'artworks' . DS . $cardDatas['id'] . '00.png') !== true) {
+                throw new Exception("Artwork not found");
+            }
+            // Cropping the artwork to remove the transparent excess
+            $artwork->cropimage(497, 713, 0, 0);
         }
-        // Cropping the artwork to remove the transparent excess
-        $artwork->cropimage(497, 713, 0, 0);
         $artwork->resizeimage(950, 1360, RESIZE_FILTER, 1);
         $this->_card->compositeImage($artwork, Imagick::COMPOSITE_DEFAULT, 301, 227);
 
@@ -382,7 +476,11 @@ class CardGenerator
         }
 
         // API version
-        $cardsDestination = CARDS_FOLDER . DS . VERSION . DS . $cardDatas['id'] . DS . $cardDatas['id'] . '00' . DS;
+        if ($custom) {
+            $cardsDestination = CUSTOM_FOLDER . DS . substr($cardDatas['filename'], 0, -4) . DS;
+        } else {
+            $cardsDestination = CARDS_FOLDER . DS . VERSION . DS . $cardDatas['id'] . DS . $cardDatas['id'] . '00' . DS;
+        }
         if (!is_dir($cardsDestination)) {
             mkdir($cardsDestination, 0755, true);
         }
