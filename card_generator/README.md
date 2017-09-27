@@ -12,15 +12,14 @@ The Gwent cards artworks need to be extracted from the game using the *high* car
 3. In the `card_generator.php` file, change the value of :
   - `DS` if you're using Windows
   - `VERSION` to get the right Gwent version
-  - `DEBUG` if you don't need progression messages
-  - `CARDS_NUMBER` to specify how many cards should be generated to the max
+  - `MAX_CARDS` to specify how many cards should be generated to the max
 4. Copy the last `cards.json` generated file in the same folder as `card_generator.php`
 
 ## Generating the cards
 There is two way to generate the cards :
 1. Generate all the cards the json file contains by simply calling the script
 2. Generate a few specific cards (ideal for updates) by giving the ID of the cards.
-  - From the command line : ```php card_generator.php -cards 112101 112102 112105...```
+  - From the command line : ```php card_generator.php cards 112101,112102,112105...```
   - From HTTP : ```localhost/card_generator.php?cards=112101,112102,112105,...```
 To be sure the artwork exists for a card, it would be generated only if the value of `released` is 1 in the json file.
 
@@ -28,3 +27,4 @@ Each card will be generated in the `images/**GWENT_VERSION**/**CARD_ID**/**VARIA
 
 ## TODO
 The script is an adaptation of what I built for my Gwent fan-website, and still need future improvements.
+
