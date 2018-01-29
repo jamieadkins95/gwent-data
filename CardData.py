@@ -53,80 +53,83 @@ INVALID_TOKENS = ['200175', '200176']
 """
  Categories are stored as sums of powers of 2. Use the ID from here to look up
  localisations in categories output file.
+ WARNING : don't change it for a simple range(1,MAX), some category numbers
+ aren't here
 """
 CATEGORIES = {
-    2**1: "card_category_1",
-    2**10: "card_category_10",
-    2**11: "card_category_11",
-    2**12: "card_category_12",
-    2**13: "card_category_13",
-    2**14: "card_category_14",
-    2**15: "card_category_15",
-    2**16: "card_category_16",
-    2**17: "card_category_17",
-    2**18: "card_category_18",
-    2**19: "card_category_19",
-    2**2: "card_category_2",
-    2**20: "card_category_20",
-    2**21: "card_category_21",
-    2**22: "card_category_22",
-    2**23: "card_category_23",
-    2**24: "card_category_24",
-    2**25: "card_category_25",
-    2**26: "card_category_26",
-    2**27: "card_category_27",
-    2**28: "card_category_28",
-    2**29: "card_category_29",
-    2**3: "card_category_3",
-    2**30: "card_category_30",
-    2**31: "card_category_31",
-    2**32: "card_category_32",
-    2**33: "card_category_33",
-    2**34: "card_category_34",
-    2**35: "card_category_35",
-    2**36: "card_category_36",
-    2**37: "card_category_37",
-    2**38: "card_category_38",
-    2**39: "card_category_39",
-    2**4: "card_category_4",
-    2**40: "card_category_40",
-    2**41: "card_category_41",
-    2**42: "card_category_42",
-    2**43: "card_category_43",
-    2**44: "card_category_34",
-    2**46: "card_category_46",
-    2**47: "card_category_47",
-    2**48: "card_category_48",
-    2**49: "card_category_49",
-    2**5: "card_category_5",
-    2**50: "card_category_50",
-    2**51: "card_category_51",
-    2**52: "card_category_52",
-    2**53: "card_category_53",
-    2**54: "card_category_54",
-    2**55: "card_category_55",
-    2**56: "card_category_56",
-    2**57: "card_category_57",
-    2**58: "card_category_58",
-    2**59: "card_category_59",
-    2**6: "card_category_6",
-    2**60: "card_category_60",
-    2**61: "card_category_61",
-    2**62: "card_category_62",
-    2**63: "card_category_63",
-    2**64: "card_category_64",
-    2**65: "card_category_65",
-    2**66: "card_category_66",
-    2**67: "card_category_67",
-    2**68: "card_category_68",
-    2**69: "card_category_69",
-    2**7: "card_category_7",
-    2**70: "card_category_70",
-    2**71: "card_category_71",
-    2**8: "card_category_8",
-    2**9: "card_category_9",
-    2**73: "card_category_73"
+    1: "card_category_1",
+    10: "card_category_10",
+    11: "card_category_11",
+    12: "card_category_12",
+    13: "card_category_13",
+    14: "card_category_14",
+    15: "card_category_15",
+    16: "card_category_16",
+    17: "card_category_17",
+    18: "card_category_18",
+    19: "card_category_19",
+    2: "card_category_2",
+    20: "card_category_20",
+    21: "card_category_21",
+    22: "card_category_22",
+    23: "card_category_23",
+    24: "card_category_24",
+    25: "card_category_25",
+    26: "card_category_26",
+    27: "card_category_27",
+    28: "card_category_28",
+    29: "card_category_29",
+    3: "card_category_3",
+    30: "card_category_30",
+    31: "card_category_31",
+    32: "card_category_32",
+    33: "card_category_33",
+    34: "card_category_34",
+    35: "card_category_35",
+    36: "card_category_36",
+    37: "card_category_37",
+    38: "card_category_38",
+    39: "card_category_39",
+    4: "card_category_4",
+    40: "card_category_40",
+    41: "card_category_41",
+    42: "card_category_42",
+    43: "card_category_43",
+    44: "card_category_34",
+    46: "card_category_46",
+    47: "card_category_47",
+    48: "card_category_48",
+    49: "card_category_49",
+    5: "card_category_5",
+    50: "card_category_50",
+    51: "card_category_51",
+    52: "card_category_52",
+    53: "card_category_53",
+    54: "card_category_54",
+    55: "card_category_55",
+    56: "card_category_56",
+    57: "card_category_57",
+    58: "card_category_58",
+    59: "card_category_59",
+    6: "card_category_6",
+    60: "card_category_60",
+    61: "card_category_61",
+    62: "card_category_62",
+    63: "card_category_63",
+    64: "card_category_64",
+    65: "card_category_65",
+    66: "card_category_66",
+    67: "card_category_67",
+    68: "card_category_68",
+    69: "card_category_69",
+    7: "card_category_7",
+    70: "card_category_70",
+    71: "card_category_71",
+    8: "card_category_8",
+    9: "card_category_9",
+    73: "card_category_73"
 }
+MAX_CATEGORIES = max(CATEGORIES)
 
 def create_card_json(gwent_data_helper, patch):
     # Replace with these values {0} : card id, {1} : variation id, {2} : image size
@@ -182,12 +185,14 @@ def create_card_json(gwent_data_helper, patch):
         card['categoryIds'] = []
         categoriesSum = int(template.find('Categories').find('e0').attrib['V']);
         # XML Card category is the sum of all categories of the card
-        for category in sorted(CATEGORIES, reverse=True):
-            if categoriesSum - category >= 0:
-                categoriesSum -= category
-                card['categoryIds'].append(CATEGORIES[category])
-            if categoriesSum == 0:
-                break
+        for category in range(MAX_CATEGORIES, 1, -1):
+          categoryPower = 2**category
+          if categoriesSum - categoryPower >= 0:
+            categoriesSum -= categoryPower
+            if category in CATEGORIES:
+              card['categoryIds'].append(CATEGORIES[category])
+          if categoriesSum == 0:
+            break
 
         categories_en_us = gwent_data_helper.categories["en-US"]
         for category_id in card['categoryIds']:
