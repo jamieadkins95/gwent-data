@@ -116,7 +116,7 @@ def create_card_json(gwent_data_helper, patch):
           if categoriesSum - categoryPower >= 0:
             categoriesSum -= categoryPower
             if category in CATEGORIES:
-              card['categoryIds'].append(CATEGORIES[category])
+              card['categoryIds'].append("card_category_" + str(category))
           if categoriesSum == 0:
             break
 
