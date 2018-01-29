@@ -114,13 +114,13 @@ def create_card_json(gwent_data_helper, patch):
         categoriesSum = int(template.find('Categories').find('e0').attrib['V']);
         # XML Card category is the sum of all categories of the card
         for category in range(LAST_CATEGORY, 1, -1):
-          categoryPower = 2**category
-          if categoriesSum - categoryPower >= 0:
-            categoriesSum -= categoryPower
-            if category in CATEGORIES:
-              card['categoryIds'].append("card_category_" + str(category))
-          if categoriesSum == 0:
-            break
+            categoryPower = 2**category
+            if categoriesSum - categoryPower >= 0:
+                categoriesSum -= categoryPower
+                if category in CATEGORIES:
+                    card['categoryIds'].append("card_category_" + str(category))
+                if categoriesSum == 0:
+                    break
 
         categories_en_us = gwent_data_helper.categories["en-US"]
         for category_id in card['categoryIds']:
