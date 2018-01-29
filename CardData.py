@@ -51,85 +51,11 @@ FACTIONS = { NEUTRAL: "Neutral", MONSTER: "Monster", NILFGAARD: "Nilfgaard",
 INVALID_TOKENS = ['200175', '200176']
 
 """
- Categories are stored as sums of powers of 2. Use the ID from here to look up
- localisations in categories output file.
- WARNING : don't change it for a simple range(1,MAX), some category numbers
- aren't here
+ WARNING : don't change it for a simple range(1,MAX), some category numbers aren't here.
 """
-CATEGORIES = {
-    1: "card_category_1",
-    10: "card_category_10",
-    11: "card_category_11",
-    12: "card_category_12",
-    13: "card_category_13",
-    14: "card_category_14",
-    15: "card_category_15",
-    16: "card_category_16",
-    17: "card_category_17",
-    18: "card_category_18",
-    19: "card_category_19",
-    2: "card_category_2",
-    20: "card_category_20",
-    21: "card_category_21",
-    22: "card_category_22",
-    23: "card_category_23",
-    24: "card_category_24",
-    25: "card_category_25",
-    26: "card_category_26",
-    27: "card_category_27",
-    28: "card_category_28",
-    29: "card_category_29",
-    3: "card_category_3",
-    30: "card_category_30",
-    31: "card_category_31",
-    32: "card_category_32",
-    33: "card_category_33",
-    34: "card_category_34",
-    35: "card_category_35",
-    36: "card_category_36",
-    37: "card_category_37",
-    38: "card_category_38",
-    39: "card_category_39",
-    4: "card_category_4",
-    40: "card_category_40",
-    41: "card_category_41",
-    42: "card_category_42",
-    43: "card_category_43",
-    44: "card_category_34",
-    46: "card_category_46",
-    47: "card_category_47",
-    48: "card_category_48",
-    49: "card_category_49",
-    5: "card_category_5",
-    50: "card_category_50",
-    51: "card_category_51",
-    52: "card_category_52",
-    53: "card_category_53",
-    54: "card_category_54",
-    55: "card_category_55",
-    56: "card_category_56",
-    57: "card_category_57",
-    58: "card_category_58",
-    59: "card_category_59",
-    6: "card_category_6",
-    60: "card_category_60",
-    61: "card_category_61",
-    62: "card_category_62",
-    63: "card_category_63",
-    64: "card_category_64",
-    65: "card_category_65",
-    66: "card_category_66",
-    67: "card_category_67",
-    68: "card_category_68",
-    69: "card_category_69",
-    7: "card_category_7",
-    70: "card_category_70",
-    71: "card_category_71",
-    8: "card_category_8",
-    9: "card_category_9",
-    73: "card_category_73"
-}
-MAX_CATEGORIES = max(CATEGORIES)
+CATEGORIES = CATEGORIES = [1,10,11,12,13,14,15,16,17,18,19,2,20,21,22,23,24,25,26,27,28,29,3,30,
+                           31,32,33,34,35,36,37,38,39,4,40,41,42,43,44,46,47,48,49,5,50,51,52,53,
+                           54,55,56,57,58,59,6,60,61,62,63,64,65,66,67,68,69,7,70,71,8,9,73]
 
 def create_card_json(gwent_data_helper, patch):
     # Replace with these values {0} : card id, {1} : variation id, {2} : image size
@@ -185,7 +111,7 @@ def create_card_json(gwent_data_helper, patch):
         card['categoryIds'] = []
         categoriesSum = int(template.find('Categories').find('e0').attrib['V']);
         # XML Card category is the sum of all categories of the card
-        for category in range(MAX_CATEGORIES, 1, -1):
+        for category in range(max(CATEGORIES), 1, -1):
           categoryPower = 2**category
           if categoriesSum - categoryPower >= 0:
             categoriesSum -= categoryPower
