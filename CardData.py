@@ -67,6 +67,7 @@ CRIMSONCURSE_SET = 11
 NOVIGRAD_SET = 12
 IRON_JUDGEMENT_SET = 13
 MERCHANTS_OF_OFIR_SET = 14
+MASTER_MIRROR_SET = 15
 
 CARD_SETS = {
     TOKEN_SET: "NonOwnable",
@@ -78,6 +79,7 @@ CARD_SETS = {
     NOVIGRAD_SET: "Novigrad",
     IRON_JUDGEMENT_SET: "IronJudgement",
     MERCHANTS_OF_OFIR_SET: "MerchantsOfOfir",
+    MASTER_MIRROR_SET: "MasterMirror",
 }
 
 # Gaunter's 'Higher than 5' and 'Lower than 5' are not actually cards.
@@ -174,7 +176,7 @@ def create_card_json(gwent_data_helper, patch, base_image_url):
         variation['variationId'] = variation_id
 
         variation['availability'] = CARD_SETS[availability]
-        collectible = availability in {BASE_SET, THRONEBREAKER_SET, UNMILLABLE_SET, CRIMSONCURSE_SET, NOVIGRAD_SET, IRON_JUDGEMENT_SET, MERCHANTS_OF_OFIR_SET}
+        collectible = availability in {BASE_SET, THRONEBREAKER_SET, UNMILLABLE_SET, CRIMSONCURSE_SET, NOVIGRAD_SET, IRON_JUDGEMENT_SET, MERCHANTS_OF_OFIR_SET, MASTER_MIRROR_SET}
         variation['collectible'] = collectible
 
         # If a card is collectible, we know it has been released.
