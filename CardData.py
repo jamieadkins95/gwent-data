@@ -26,7 +26,7 @@ SKELLIGE = 32
 SYNDICATE = 64
 
 TYPE_LEADER = 1
-TYPE_SPELL = 2
+TYPE_SPECIAL = 2
 TYPE_UNIT = 4
 TYPE_ARTIFACT = 8
 TYPE_STRATEGEM = 16
@@ -53,7 +53,7 @@ RARITIES = { COMMON: "Common", RARE: "Rare", EPIC: "Epic", LEGENDARY: "Legendary
 TIERS = { LEADER: "Leader", BRONZE: "Bronze", SILVER: "Silver", GOLD: "Gold"}
 FACTIONS = { NEUTRAL: "Neutral", MONSTER: "Monster", NILFGAARD: "Nilfgaard",
     NORTHERN_REALMS: "Northern Realms", SCOIATAEL: "Scoiatael", SKELLIGE: "Skellige", SYNDICATE: "Syndicate"}
-TYPES = { TYPE_LEADER: "Leader", TYPE_SPELL: "Spell", TYPE_UNIT: "Unit", TYPE_ARTIFACT: "Artifact", TYPE_STRATEGEM: "Strategem"}
+TYPES = { TYPE_LEADER: "Leader", TYPE_SPECIAL: "Special", TYPE_UNIT: "Unit", TYPE_ARTIFACT: "Artifact", TYPE_STRATEGEM: "Strategem"}
 
 """
 Gwent Card Sets
